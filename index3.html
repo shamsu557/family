@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Galadima Family Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --g:#1a5c3a;--gm:#2d7a52;--gl:#5db882;--gp:#e8f5ed;--gpp:#c8ebd5;
+  --bg:#f5f7f5;--white:#ffffff;--bdr:#e0e8e3;--txt:#111d16;--mut:#5c7566;
+  --red:#dc2626;--gold:#92711a;--goldp:#fdf3dc;
+  --fs:'DM Sans',sans-serif;--fd:'Playfair Display',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fs);background:var(--bg);color:var(--txt);min-height:100vh;}
+
+/* ── NAV ── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--white);border-bottom:1px solid var(--bdr);box-shadow:0 1px 12px rgba(26,92,58,.07);}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:9px;cursor:pointer;text-decoration:none;}
+.logo-icon{width:34px;height:34px;background:var(--gp);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-text{font-family:var(--fd);font-size:1rem;color:var(--g);font-weight:700;}
+.nav-links{display:flex;align-items:center;gap:2px;}
+.nl{font-size:.83rem;font-weight:600;color:var(--mut);cursor:pointer;padding:7px 11px;border-radius:8px;transition:.15s;white-space:nowrap;}
+.nl:hover{background:var(--gp);color:var(--g);}
+.nl.active{background:var(--gp);color:var(--g);}
+.btn-admin{background:var(--g);color:#fff;font-size:.8rem;font-weight:700;border:none;border-radius:9px;padding:7px 16px;cursor:pointer;transition:.2s;font-family:var(--fs);}
+.btn-admin:hover{background:var(--gm);}
+#ham{display:none;background:none;border:none;cursor:pointer;padding:6px;}
+#mob-menu{display:none;background:var(--white);border-top:1px solid var(--bdr);padding:10px 16px 14px;}
+#mob-menu .nl{display:block;padding:9px 12px;}
+
+/* ── PAGES ── */
+.page{display:none;padding-top:56px;min-height:100vh;}
+.page.active{display:block;}
+body.admin-mode #nav{display:none;}
+body.admin-mode #page-admin-dashboard{padding-top:0;}
+
+/* ── SIDEBAR — always anchored to top:0 in admin mode ── */
+/* BUG FIX: sidebar top adjusts based on admin-mode */
+#sb{position:fixed;top:56px;left:-270px;bottom:0;width:270px;z-index:300;background:var(--white);border-right:2px solid var(--gpp);box-shadow:4px 0 20px rgba(0,0,0,.07);transition:left .3s;overflow-y:auto;}
+body.admin-mode #sb{top:0;}
+#sb.open{left:0;}
+#sb-ov{position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.18);display:none;}
+#sb-ov.open{display:block;}
+
+/* ── BUTTONS ── */
+.btn{background:var(--g);color:#fff;font-weight:700;border:none;border-radius:10px;padding:10px 24px;cursor:pointer;font-family:var(--fs);font-size:.875rem;transition:.2s;}
+.btn:hover{background:var(--gm);transform:translateY(-1px);}
+.btn-o{background:var(--white);color:var(--g);font-weight:600;border:1.5px solid var(--gpp);border-radius:10px;padding:8px 18px;cursor:pointer;font-family:var(--fs);font-size:.85rem;transition:.15s;}
+.btn-o:hover{border-color:var(--gl);background:var(--gp);}
+.btn-sm{padding:6px 14px!important;font-size:.78rem!important;border-radius:8px!important;}
+.badge{background:var(--gp);color:var(--g);font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;text-transform:uppercase;letter-spacing:.05em;}
+.badge-f{background:#fce7f3;color:#9d174d;}
+.badge-gold{background:var(--goldp);color:var(--gold);}
+
+/* ── HOME ── */
+#hero{background:linear-gradient(155deg,#e0f0e8 0%,var(--bg) 60%);border-bottom:1px solid var(--bdr);padding:72px 20px 56px;text-align:center;}
+.anc-wrap{position:relative;display:inline-block;margin-bottom:20px;}
+.anc-photo{width:160px;height:160px;border-radius:50%;object-fit:cover;border:5px solid var(--white);box-shadow:0 0 0 4px var(--gl),0 16px 40px rgba(26,92,58,.2);cursor:pointer;display:block;transition:.3s;}
+.anc-photo:hover{transform:scale(1.04);}
+.anc-gen{position:absolute;bottom:6px;right:6px;background:var(--g);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;border:2px solid var(--white);}
+
+/* BUG FIX: renamed .sl stat label to .stat-lbl to avoid collision with sidebar .sl */
+.stat-strip{background:var(--white);border-bottom:1px solid var(--bdr);padding:18px 16px;}
+.stat-inner{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;}
+.sn{font-family:var(--fd);font-size:2rem;color:var(--g);font-weight:900;}
+.stat-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-top:2px;font-weight:600;}
+
+/* ── TREE ── */
+#page-tree{background:var(--bg);}
+#tree-topbar{background:var(--white);border-bottom:1px solid var(--bdr);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;top:56px;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.crumb{font-size:.75rem;font-weight:600;color:var(--mut);cursor:pointer;transition:.15s;}
+.crumb:hover,.crumb.last{color:var(--g);}
+.crumb-sep{font-size:.75rem;color:var(--bdr);margin:0 3px;}
+.tree-wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px;}
+.parent-banner{background:linear-gradient(130deg,var(--gp),var(--white));border:1.5px solid var(--gpp);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:32px;flex-wrap:wrap;}
+.b-img{width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid var(--white);box-shadow:0 4px 12px rgba(26,92,58,.15);flex-shrink:0;}
+.b-info{flex:1;min-width:0;}
+.trunk{width:2px;height:28px;background:linear-gradient(to bottom,var(--gl),var(--gpp));}
+.child-node{display:flex;flex-direction:column;align-items:center;position:relative;}
+.child-drop{width:2px;height:22px;background:var(--gl);margin-bottom:6px;}
+.child-card{display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:.22s;width:118px;}
+.child-card:hover{transform:translateY(-5px);}
+.photo-ring{position:relative;margin-bottom:8px;}
+.c-photo{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid var(--white);outline:3px solid var(--gl);transition:outline-color .2s;display:block;}
+.c-photo.female{outline-color:#f9a8d4;}
+.child-card:hover .c-photo{outline-color:var(--gm);box-shadow:0 8px 24px rgba(26,92,58,.18);}
+.child-card:hover .c-photo.female{outline-color:#ec4899;}
+.kids-count{position:absolute;bottom:1px;right:1px;background:var(--g);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;border:2px solid var(--white);white-space:nowrap;}
+.c-name{font-size:.8rem;font-weight:700;text-align:center;line-height:1.3;color:var(--txt);}
+.c-sub{font-size:.7rem;color:var(--mut);text-align:center;margin-top:2px;}
+.prof-btn{margin-top:6px;font-size:.68rem;color:var(--g);background:var(--gp);border:none;border-radius:20px;padding:3px 10px;cursor:pointer;transition:.15s;font-family:var(--fs);}
+.prof-btn:hover{background:var(--gl);color:#fff;}
+.no-kids{text-align:center;padding:48px 20px;background:var(--white);border:1.5px solid var(--bdr);border-radius:16px;max-width:300px;margin:0 auto;}
+
+/* ── SEARCH ── */
+#page-search{background:var(--bg);}
+.s-inner{max-width:680px;margin:0 auto;padding:36px 16px 60px;}
+.s-wrap{position:relative;margin-bottom:20px;}
+.s-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;}
+.s-input{width:100%;border:1.5px solid var(--bdr);border-radius:12px;padding:11px 16px 11px 42px;font-size:.9rem;outline:none;font-family:var(--fs);background:var(--white);transition:.2s;color:var(--txt);}
+.s-input:focus{border-color:var(--gm);box-shadow:0 0 0 3px rgba(45,122,82,.1);}
+.s-row{background:var(--white);border:1.5px solid var(--bdr);border-radius:12px;display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:.15s;margin-bottom:8px;}
+.s-row:hover{border-color:var(--gl);background:#f0fdf4;}
+.s-photo{width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--gp);}
+
+/* ── RELATIONSHIP ── */
+#page-relationship{background:var(--bg);}
+.rel-inner{max-width:600px;margin:0 auto;padding:36px 16px 60px;}
+.rel-card{background:var(--white);border:1.5px solid var(--bdr);border-radius:16px;padding:24px;margin-bottom:20px;}
+.r-sel{width:100%;border:1.5px solid var(--bdr);border-radius:10px;padding:10px 13px;font-size:.875rem;outline:none;background:var(--white);font-family:var(--fs);transition:.2s;color:var(--txt);}
+.r-sel:focus{border-color:var(--gm);}
+.rel-result{background:var(--white);border:2px solid var(--gl);border-radius:16px;padding:28px;text-align:center;display:none;}
+.rel-result.show{display:block;}
+.rel-avatars{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.rel-av{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.rel-av img{width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid var(--gp);}
+.rel-av span{font-size:.75rem;font-weight:700;}
+.link-icon{font-size:1.4rem;color:var(--gl);}
+
+/* ── HISTORY ── */
+#page-history{background:var(--bg);}
+.hist-inner{max-width:700px;margin:0 auto;padding:36px 16px 60px;}
+.tl{position:relative;padding-left:38px;}
+.tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,var(--gl),transparent);}
+.tl-item{display:flex;gap:16px;margin-bottom:28px;opacity:0;transform:translateX(-20px);transition:opacity .5s ease,transform .5s ease;}
+.tl-item.visible{opacity:1;transform:none;}
+.tl-dot{width:16px;height:16px;background:var(--g);border-radius:50%;border:3px solid var(--white);box-shadow:0 0 0 3px var(--gl);flex-shrink:0;margin-top:4px;position:relative;left:-38px;margin-right:-16px;transition:transform .3s ease,box-shadow .3s ease;}
+.tl-item.visible .tl-dot{animation:dotPop .4s ease forwards;}
+@keyframes dotPop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+.tl-body{background:var(--white);border:1.5px solid var(--bdr);border-radius:14px;padding:16px 20px;flex:1;transition:border-color .2s,box-shadow .2s;}
+.tl-body:hover{border-color:var(--gl);box-shadow:0 4px 16px rgba(26,92,58,.08);}
+.tl-year{font-family:var(--fd);font-size:.7rem;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.tl-title{font-family:var(--fd);font-size:1rem;font-weight:700;color:var(--txt);margin-bottom:7px;}
+.tl-body p{font-size:.875rem;color:var(--mut);line-height:1.7;}
+
+/* ── ADMIN LOGIN ── */
+#page-admin-login,#page-reset-password{background:var(--bg);}
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:20px;}
+.auth-card{background:var(--white);border:1.5px solid var(--bdr);border-radius:20px;padding:36px 30px;max-width:390px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.08);}
+.auth-icon{width:50px;height:50px;background:var(--gp);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.fi{width:100%;border:1.5px solid var(--bdr);border-radius:9px;padding:10px 13px;font-size:.875rem;outline:none;font-family:var(--fs);background:var(--white);transition:.2s;color:var(--txt);}
+.fi:focus{border-color:var(--gm);}
+.fl{font-size:.7rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px;}
+.err-box{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#b91c1c;font-weight:600;display:none;}
+
+/* ── ADMIN DASHBOARD ── */
+#page-admin-dashboard{background:var(--bg);}
+
+/* BUG FIX: sidebar nav items use .sb-link instead of .sl to avoid stat-label collision */
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;cursor:pointer;color:var(--mut);font-size:.875rem;font-weight:600;transition:.15s;}
+.sb-link:hover,.sb-link.on{background:var(--gp);color:var(--g);}
+
+.adm-wrap{max-width:1000px;margin:0 auto;padding:20px 16px 60px;}
+.stat-card{background:var(--white);border:1.5px solid var(--bdr);border-radius:14px;padding:20px;text-align:center;}
+.stat-card .n{font-family:var(--fd);font-size:2.2rem;font-weight:900;color:var(--g);}
+.stat-card .l{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-top:4px;font-weight:700;}
+.at{width:100%;border-collapse:collapse;}
+.at th{text-align:left;padding:10px 14px;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);border-bottom:2px solid var(--bdr);font-weight:700;}
+.at td{padding:11px 14px;border-bottom:1px solid var(--bdr);font-size:.83rem;}
+.at tr:last-child td{border:none;}
+.at tr:hover td{background:#f0fdf4;}
+.tbl-wrap{background:var(--white);border:1.5px solid var(--bdr);border-radius:16px;overflow:hidden;}
+
+/* ── ADD/EDIT MODAL ── */
+#add-mod{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);}
+#add-mod.open{display:flex;}
+.add-box{background:var(--white);border-radius:20px;padding:26px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;}
+
+/* ── PROFILE MODAL ── */
+#mod-bg{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
+#mod-bg.open{display:flex;}
+#mod-box{background:var(--white);border-radius:20px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.15);position:relative;}
+.dp{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:10px 14px;}
+.dp .lbl{font-size:.65rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;font-weight:700;}
+.dp .val{font-size:.875rem;font-weight:700;}
+.chip{background:var(--gp);color:var(--g);border-radius:20px;padding:4px 12px;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-block;transition:.15s;}
+.chip:hover{background:var(--gpp);}
+
+/* ── PAGE BACK HEADER ── */
+.page-back-bar{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.btn-back{display:inline-flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--bdr);border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:700;color:var(--g);cursor:pointer;font-family:var(--fs);transition:.18s;}
+.btn-back:hover{background:var(--gp);border-color:var(--gl);}
+
+/* ── UTILS ── */
+.page-header{text-align:center;margin-bottom:32px;}
+.page-header h2{font-family:var(--fd);font-size:1.8rem;font-weight:700;color:var(--g);margin-top:10px;}
+.page-header p{font-size:.875rem;color:var(--mut);margin-top:6px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px;}
+
+@media(max-width:640px){
+  .nav-links{display:none;}
+  #ham{display:block;}
+  .anc-photo{width:130px;height:130px;}
+  .stat-inner{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .sn{font-size:1.5rem;}
+  .child-card{width:100px;}
+  .c-photo{width:76px;height:76px;}
+  .s-inner,.rel-inner,.hist-inner{padding:20px 14px 50px;}
+  .page-header h2{font-size:1.4rem;}
+  #mod-box{border-radius:16px;}
+  .rel-card{padding:16px;}
+  .rel-card > div{grid-template-columns:1fr!important;}
+  .auth-card{padding:24px 18px;}
+  .add-box{padding:18px;}
+  .add-box > div[style*="grid"]{grid-template-columns:1fr!important;}
+  #tree-topbar{gap:5px;}
+  .parent-banner{gap:10px;}
+  .parent-banner > div:last-child{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ NAVBAR ════ -->
+<nav id="nav">
+  <div class="nav-inner">
+    <div class="logo" onclick="go('home')">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2.2" stroke-linecap="round"><path d="M12 2C9 5.5 6 9 6 13a6 6 0 0012 0c0-4-3-7.5-6-11z"/><line x1="12" y1="13" x2="12" y2="22"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+      </div>
+      <span class="logo-text">Galadima Family</span>
+    </div>
+    <div class="nav-links">
+      <span class="nl" id="nav-home" onclick="go('home')">Home</span>
+      <span class="nl" id="nav-search" onclick="go('search')">Search</span>
+      <span class="nl" id="nav-relationship" onclick="go('relationship')">Relationships</span>
+      <span class="nl" id="nav-history" onclick="go('history')">History</span>
+      <button class="btn-admin" onclick="go('admin-login')">Admin Portal</button>
+    </div>
+    <button id="ham" onclick="toggleMob()" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="var(--g)" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h16M3 12h16M3 18h16"/></svg>
+    </button>
+  </div>
+  <div id="mob-menu">
+    <span class="nl" onclick="go('home');toggleMob()">Home</span>
+    <span class="nl" onclick="go('search');toggleMob()">Search</span>
+    <span class="nl" onclick="go('relationship');toggleMob()">Relationships</span>
+    <span class="nl" onclick="go('history');toggleMob()">History</span>
+    <span class="nl" onclick="go('admin-login');toggleMob()">Admin Portal</span>
+  </div>
+</nav>
+
+<!-- ════ HOME ════ -->
+<div id="page-home" class="page active">
+  <div id="hero">
+    <div style="max-width:520px;margin:0 auto;">
+      <span class="badge" style="margin-bottom:14px;">Family Heritage Archive</span>
+      <div class="anc-wrap">
+        <img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=400&h=400&fit=crop&crop=face"
+             class="anc-photo" alt="Aliyu Umar Galadima" onclick="enterTree(0)"
+             onerror="this.src='https://ui-avatars.com/api/?name=Aliyu+Galadima&background=d8f3dc&color=1a5c3a&size=200'"/>
+        <span class="anc-gen">Head</span>
+      </div>
+      <h1 style="font-family:var(--fd);font-size:1.9rem;color:var(--g);margin-bottom:6px;">Alhaji Aliyu Umar Galadima</h1>
+      <p style="color:var(--mut);font-size:.9rem;margin-bottom:22px;">Family Head &nbsp;·&nbsp; Grand Patriarch</p>
+      <button class="btn" onclick="enterTree(0)">Explore Family Tree &rarr;</button>
+    </div>
+  </div>
+  <div class="stat-strip">
+    <div class="stat-inner">
+      <!-- BUG FIX: was .sl (collides with sidebar), now .stat-lbl -->
+      <div><div class="sn">5</div><div class="stat-lbl">Children</div></div>
+      <div><div class="sn">3+</div><div class="stat-lbl">Generations</div></div>
+      <div><div class="sn">10+</div><div class="stat-lbl">Grandchildren</div></div>
+    </div>
+  </div>
+  <div style="max-width:660px;margin:0 auto;padding:48px 20px;text-align:center;">
+    <h2 style="font-family:var(--fd);font-size:1.5rem;color:var(--g);margin-bottom:14px;">A Legacy of Faith &amp; Community</h2>
+    <p style="color:var(--mut);line-height:1.8;font-size:.9rem;">The Galadima family stands as a testament to faith, unity and community service across generations. This living digital archive preserves the stories, connections and memories of every branch of this remarkable family.</p>
+  </div>
+</div>
+
+<!-- ════ TREE ════ -->
+<div id="page-tree" class="page">
+  <div id="tree-topbar">
+    <button class="btn-o btn-sm" onclick="goBack()">&#8592; Back</button>
+    <button class="btn-o btn-sm" onclick="goHome()">&#8962; Home</button>
+    <div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap;" id="bc"></div>
+  </div>
+  <div class="tree-wrap">
+    <div class="parent-banner">
+      <img id="b-img" src="" class="b-img" alt=""
+           onerror="this.src='https://ui-avatars.com/api/?name=Family&background=e8f5ed&color=1a5c3a&size=100'"/>
+      <div class="b-info">
+        <p style="font-size:.68rem;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Children of</p>
+        <h2 id="b-name" style="font-family:var(--fd);font-size:1.15rem;color:var(--g);"></h2>
+        <p id="b-sub" style="font-size:.8rem;color:var(--mut);margin-top:3px;"></p>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+        <button class="btn-o btn-sm" onclick="goBack()">&#8592; Back</button>
+        <button class="btn-o btn-sm" onclick="goHome()">&#8962; Home</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div class="trunk" id="trunk"></div>
+      <div id="cgrid" style="width:100%;"></div>
+    </div>
+    <div id="nokids" style="display:none;" class="no-kids">
+      <div style="font-size:2rem;margin-bottom:10px;">🌿</div>
+      <p style="font-weight:700;margin-bottom:6px;">No children recorded</p>
+      <p style="font-size:.85rem;color:var(--mut);margin-bottom:16px;">This member has no children in the archive yet.</p>
+      <button class="btn-o" onclick="goBack()">&#8592; Go Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SEARCH ════ -->
+<div id="page-search" class="page">
+  <div class="s-inner">
+    <div class="page-back-bar">
+      <button class="btn-back" onclick="go('home')">&#8592; Back</button>
+    </div>
+    <div class="page-header">
+      <span class="badge">Search</span>
+      <h2>Find a Family Member</h2>
+      <p>Search by first name, middle name or surname</p>
+    </div>
+    <div class="s-wrap">
+      <svg class="s-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input id="s-inp" type="text" class="s-input" placeholder="e.g. Kabir, Fatima, Galadima…" oninput="doSearch(this.value)"/>
+    </div>
+    <div id="s-res"></div>
+    <div id="s-empty" style="text-align:center;padding:48px 0;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🔍</div>
+      <p style="color:var(--mut);font-size:.9rem;">Start typing to search family members</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RELATIONSHIP ════ -->
+<div id="page-relationship" class="page">
+  <div class="rel-inner">
+    <div class="page-back-bar">
+      <button class="btn-back" onclick="go('home')">&#8592; Back</button>
+    </div>
+    <div class="page-header">
+      <span class="badge">Relationship Finder</span>
+      <h2>How Are They Related?</h2>
+      <p>Select any two members to discover their connection</p>
+    </div>
+    <div class="rel-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+        <div><label class="fl">Person A</label><select id="rel-a" class="r-sel"><option value="">Select…</option></select></div>
+        <div><label class="fl">Person B</label><select id="rel-b" class="r-sel"><option value="">Select…</option></select></div>
+      </div>
+      <button class="btn" style="width:100%;" onclick="findRel()">Find Relationship &rarr;</button>
+    </div>
+    <div id="rel-res" class="rel-result"></div>
+  </div>
+</div>
+
+<!-- ════ HISTORY ════ -->
+<div id="page-history" class="page">
+  <div class="hist-inner">
+    <div class="page-back-bar">
+      <button class="btn-back" onclick="go('home')">&#8592; Back</button>
+    </div>
+    <div class="page-header">
+      <span class="badge">Family History</span>
+      <h2>The Galadima Legacy</h2>
+      <p style="max-width:380px;margin:8px auto 0;line-height:1.7;">A story of faith, leadership and community spanning generations.</p>
+    </div>
+    <div class="tl" id="tl"></div>
+  </div>
+</div>
+
+<!-- ════ ADMIN LOGIN ════ -->
+<div id="page-admin-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div class="auth-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--g)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h2 style="font-family:var(--fd);font-size:1.3rem;color:var(--g);margin-bottom:4px;">Admin Portal</h2>
+        <p style="color:var(--mut);font-size:.8rem;">Sign in to manage the family tree</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="fl">Username</label><input id="l-u" type="text" class="fi" placeholder="ali@Galadima"/></div>
+        <div><label class="fl">Password</label><input id="l-p" type="password" class="fi" placeholder="••••••••"/></div>
+        <div id="l-err" class="err-box"></div>
+        <button class="btn" style="width:100%;" onclick="doLogin()">Sign In &rarr;</button>
+        <p style="text-align:center;font-size:.8rem;color:var(--mut);cursor:pointer;" onclick="go('reset-password')">Forgot password?</p>
+      </div>
+      <p style="text-align:center;font-size:.72rem;color:var(--mut);margin-top:18px;line-height:1.6;">Demo: <strong>ali@Galadima</strong> / <strong>Admin@123</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESET PASSWORD ════ -->
+<div id="page-reset-password" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2 style="font-family:var(--fd);font-size:1.3rem;color:var(--g);margin-bottom:20px;">Reset Password</h2>
+      <!-- BUG FIX: all 3 steps use consistent show/hide via JS, no mixed inline display values -->
+      <div id="rs1">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label class="fl">Username</label><input id="rs-u" type="text" class="fi" placeholder="ali@Galadima"/></div>
+          <button class="btn" style="width:100%;" onclick="rs1fn()">Continue &rarr;</button>
+        </div>
+      </div>
+      <div id="rs2" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="background:var(--gp);border-radius:10px;padding:14px;">
+            <p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--g);margin-bottom:5px;">Security Question</p>
+            <p id="rs-q" style="font-weight:700;font-size:.9rem;"></p>
+          </div>
+          <div><label class="fl">Your Answer</label><input id="rs-a" type="text" class="fi" placeholder="Case-insensitive"/></div>
+          <div id="rs-err" class="err-box"></div>
+          <button class="btn" style="width:100%;" onclick="rs2fn()">Verify &rarr;</button>
+        </div>
+      </div>
+      <div id="rs3" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label class="fl">New Password</label><input id="rs-np" type="password" class="fi" placeholder="At least 6 characters"/></div>
+          <button class="btn" style="width:100%;" onclick="rs3fn()">Reset Password</button>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:.8rem;color:var(--g);margin-top:18px;cursor:pointer;" onclick="go('admin-login')">&#8592; Back to Login</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ADMIN DASHBOARD ════ -->
+<div id="page-admin-dashboard" class="page">
+  <div id="sb-ov" onclick="toggleSB(false)"></div>
+  <div id="sb">
+    <div style="padding:20px;border-bottom:1px solid var(--bdr);">
+      <div style="background:var(--gp);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--g)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <p style="font-size:.68rem;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Signed in as</p>
+      <p id="sb-u" style="font-weight:700;font-size:.9rem;color:var(--g);margin-top:2px;"></p>
+      <p id="sb-r" style="font-size:.75rem;color:var(--mut);"></p>
+    </div>
+    <!-- BUG FIX: changed .sl to .sb-link to avoid class name collision with stat labels -->
+    <nav style="padding:12px;display:flex;flex-direction:column;gap:3px;">
+      <div class="sb-link on" onclick="showSec('dashboard',this)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </div>
+      <div class="sb-link" onclick="showSec('members',this)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Family Members
+      </div>
+      <div class="sb-link" id="sb-adm" onclick="showSec('admins',this)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        Manage Admins
+      </div>
+      <div class="sb-link" onclick="doLogout()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </div>
+    </nav>
+  </div>
+
+  <div class="adm-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <button onclick="toggleSB(true)" style="padding:8px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--white);cursor:pointer;display:flex;">
+        <svg width="20" height="20" fill="none" stroke="var(--g)" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h16M3 12h16M3 18h16"/></svg>
+      </button>
+      <h2 id="sec-ttl" style="font-family:var(--fd);font-size:1.3rem;color:var(--g);">Dashboard</h2>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div id="sec-dashboard">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+        <div class="stat-card"><div class="n" id="d-total">0</div><div class="l">Members</div></div>
+        <div class="stat-card"><div class="n">3</div><div class="l">Generations</div></div>
+        <div class="stat-card"><div class="n">3</div><div class="l">Admins</div></div>
+        <div class="stat-card"><div class="n">5</div><div class="l">Children of Head</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <div style="padding:16px 18px 12px;border-bottom:1px solid var(--bdr);">
+          <h3 style="font-weight:700;font-size:.9rem;color:var(--g);">Recently Added</h3>
+        </div>
+        <table class="at">
+          <thead><tr><th>Name</th><th>Gen</th><th>Gender</th><th>Added</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;">Hasan Sani Bello</td><td><span class="badge">Gen 3</span></td><td>Male</td><td style="color:var(--mut);">Jan 2025</td></tr>
+            <tr><td style="font-weight:700;">Sumayyah Sani Bello</td><td><span class="badge">Gen 3</span></td><td>Female</td><td style="color:var(--mut);">Jan 2025</td></tr>
+            <tr><td style="font-weight:700;">Rahma Hassan Wada</td><td><span class="badge">Gen 3</span></td><td>Female</td><td style="color:var(--mut);">Dec 2024</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MEMBERS SECTION -->
+    <!-- BUG FIX: was nested inside sec-members causing Admins section to never render independently -->
+    <div id="sec-members" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <p style="font-size:.875rem;color:var(--mut);">All registered family members</p>
+        <button class="btn btn-sm" id="btn-add-head" onclick="openAddHead()">+ Add Family Head</button>
+      </div>
+      <div style="position:relative;margin-bottom:14px;">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input id="mt-search" class="fi" style="padding-left:38px;" placeholder="Search by name, surname…" oninput="renderMT()"/>
+      </div>
+      <div class="tbl-wrap" style="overflow-x:auto;">
+        <table class="at">
+          <thead><tr><th>Photo</th><th>Full Name</th><th>Gen</th><th>Parent</th><th style="text-align:center;">Actions</th></tr></thead>
+          <tbody id="mtbody"></tbody>
+        </table>
+        <div id="mt-footer" style="padding:12px 18px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <!-- ADMINS SECTION — BUG FIX: moved out of sec-members, now a proper sibling -->
+    <div id="sec-admins" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <p style="font-size:.875rem;color:var(--mut);">Main admin only can manage admins</p>
+        <button class="btn btn-sm" onclick="createAdmin()">+ Create Admin</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="at">
+          <thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="atbody">
+            <tr><td style="font-weight:700;">ali@Galadima</td><td><span class="badge">Main Admin</span></td><td style="color:var(--mut);">Jan 2025</td><td><span style="font-size:.78rem;color:var(--mut);">—</span></td></tr>
+            <tr><td style="font-weight:700;">kab@Galadima</td><td><span style="font-size:.78rem;font-weight:600;color:var(--mut);">Admin</span></td><td style="color:var(--mut);">Mar 2025</td><td><button style="color:var(--red);font-size:.78rem;font-weight:700;border:none;background:none;cursor:pointer;" onclick="this.closest('tr').remove()">Delete</button></td></tr>
+            <tr><td style="font-weight:700;">ism@Galadima</td><td><span style="font-size:.78rem;font-weight:600;color:var(--mut);">Admin</span></td><td style="color:var(--mut);">Jun 2025</td><td><button style="color:var(--red);font-size:.78rem;font-weight:700;border:none;background:none;cursor:pointer;" onclick="this.closest('tr').remove()">Delete</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /adm-wrap -->
+</div><!-- /page-admin-dashboard -->
+
+<!-- ════ PROFILE MODAL ════ -->
+<div id="mod-bg" onclick="closeMod(event)">
+  <div id="mod-box" onclick="event.stopPropagation()">
+    <button onclick="closeModX()" style="position:absolute;top:12px;right:12px;background:var(--bg);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--mut);z-index:10;display:flex;align-items:center;justify-content:center;">✕</button>
+    <div id="mod-cont"></div>
+  </div>
+</div>
+
+<!-- ════ ADD/EDIT MODAL ════ -->
+<div id="add-mod" onclick="closeAddOut(event)">
+  <div class="add-box" onclick="event.stopPropagation()">
+    <button onclick="closeAdd()" style="position:absolute;top:12px;right:12px;background:var(--bg);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--mut);display:flex;align-items:center;justify-content:center;">✕</button>
+    <h3 id="add-ttl" style="font-family:var(--fd);font-size:1.1rem;color:var(--g);margin-bottom:6px;">Add Family Member</h3>
+    <div id="add-parent-info" style="display:none;background:var(--gp);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.8rem;color:var(--g);font-weight:600;">
+      <span style="opacity:.7;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px;">Adding child under</span>
+      <span id="add-parent-name"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div><label class="fl">First Name *</label><input id="fm-fn" class="fi" placeholder="e.g. Kabir"/></div>
+      <div><label class="fl">Middle Name</label><input id="fm-mn" class="fi" placeholder="e.g. Aliyu"/></div>
+      <div><label class="fl">Surname *</label><input id="fm-sn" class="fi" placeholder="e.g. Galadima"/></div>
+      <div><label class="fl">Gender</label><select id="fm-g" class="fi"><option>Male</option><option>Female</option></select></div>
+      <div><label class="fl">Date of Birth</label><input id="fm-d" type="date" class="fi"/></div>
+      <div><label class="fl">State</label><input id="fm-st" class="fi" placeholder="e.g. Kano"/></div>
+      <div><label class="fl">LGA</label><input id="fm-lg" class="fi" placeholder="e.g. Nassarawa"/></div>
+      <div id="fm-p-wrap" style="display:none;"><label class="fl">Parent</label><select id="fm-p" class="fi"><option value="">None</option></select></div>
+    </div>
+    <div style="margin-top:12px;"><label class="fl">Address</label><input id="fm-ad" class="fi" placeholder="Street, City"/></div>
+    <div style="margin-top:12px;"><label class="fl">Photo URL (optional)</label><input id="fm-im" class="fi" placeholder="https://…"/></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn" style="flex:1;" onclick="saveMember()">Save Member</button>
+      <button class="btn-o" style="flex:1;" onclick="closeAdd()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+let M = [
+  {id:0,  fn:'Aliyu',    mn:'Umar',    sn:'Galadima', g:'Male',   dob:'',           addr:'Family Compound, Nigeria', st:'Nigeria', lga:'', pid:null, gen:1, img:'https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=400&h=400&fit=crop&crop=face'},
+  {id:1,  fn:'Kabir',    mn:'Aliyu',   sn:'Galadima', g:'Male',   dob:'1975-03-10', addr:'Nigeria', st:'Nigeria', lga:'', pid:0, gen:2, img:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'},
+  {id:2,  fn:'Ismail',   mn:'Aliyu',   sn:'Galadima', g:'Male',   dob:'1978-07-22', addr:'Nigeria', st:'Nigeria', lga:'', pid:0, gen:2, img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face'},
+  {id:3,  fn:'Usman',    mn:'Aliyu',   sn:'Galadima', g:'Male',   dob:'1981-11-05', addr:'Nigeria', st:'Nigeria', lga:'', pid:0, gen:2, img:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'},
+  {id:4,  fn:'Fatima',   mn:'Aliyu',   sn:'Galadima', g:'Female', dob:'1983-04-18', addr:'Nigeria', st:'Nigeria', lga:'', pid:0, gen:2, img:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop&crop=face'},
+  {id:5,  fn:'Khadija',  mn:'Aliyu',   sn:'Galadima', g:'Female', dob:'1986-09-30', addr:'Nigeria', st:'Nigeria', lga:'', pid:0, gen:2, img:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face'},
+  {id:6,  fn:'Ahmad',    mn:'Kabir',   sn:'Galadima', g:'Male',   dob:'1998-01-14', addr:'Nigeria', st:'Nigeria', lga:'', pid:1, gen:3, img:'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&h=300&fit=crop&crop=face'},
+  {id:7,  fn:'Maryam',   mn:'Kabir',   sn:'Galadima', g:'Female', dob:'2001-06-29', addr:'Nigeria', st:'Nigeria', lga:'', pid:1, gen:3, img:'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=300&h=300&fit=crop&crop=face'},
+  {id:8,  fn:'Zainab',   mn:'Ismail',  sn:'Galadima', g:'Female', dob:'2000-03-07', addr:'Nigeria', st:'Nigeria', lga:'', pid:2, gen:3, img:'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=300&h=300&fit=crop&crop=face'},
+  {id:9,  fn:'Ibrahim',  mn:'Ismail',  sn:'Galadima', g:'Male',   dob:'2003-11-08', addr:'Nigeria', st:'Nigeria', lga:'', pid:2, gen:3, img:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop&crop=face'},
+  {id:10, fn:'Hafsat',   mn:'Ismail',  sn:'Galadima', g:'Female', dob:'2005-08-20', addr:'Nigeria', st:'Nigeria', lga:'', pid:2, gen:3, img:'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=300&h=300&fit=crop&crop=face'},
+  {id:11, fn:'Yusuf',    mn:'Usman',   sn:'Galadima', g:'Male',   dob:'2004-05-17', addr:'Nigeria', st:'Nigeria', lga:'', pid:3, gen:3, img:'https://images.unsplash.com/photo-1463453091185-61582044d556?w=300&h=300&fit=crop&crop=face'},
+  {id:12, fn:'Aisha',    mn:'Usman',   sn:'Galadima', g:'Female', dob:'2007-02-12', addr:'Nigeria', st:'Nigeria', lga:'', pid:3, gen:3, img:'https://images.unsplash.com/photo-1523824921871-d6f1a15151f1?w=300&h=300&fit=crop&crop=face'},
+  {id:13, fn:'Bilal',    mn:'Hassan',  sn:'Wada',     g:'Male',   dob:'2003-09-22', addr:'Nigeria', st:'Nigeria', lga:'', pid:4, gen:3, img:'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=300&h=300&fit=crop&crop=face'},
+  {id:14, fn:'Rahma',    mn:'Hassan',  sn:'Wada',     g:'Female', dob:'2006-07-04', addr:'Nigeria', st:'Nigeria', lga:'', pid:4, gen:3, img:'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=300&fit=crop&crop=face'},
+  {id:15, fn:'Umar',     mn:'Sani',    sn:'Bello',    g:'Male',   dob:'2005-04-03', addr:'Nigeria', st:'Nigeria', lga:'', pid:5, gen:3, img:'https://images.unsplash.com/photo-1522556189639-b150ed9c4330?w=300&h=300&fit=crop&crop=face'},
+  {id:16, fn:'Sumayyah', mn:'Sani',    sn:'Bello',    g:'Female', dob:'2008-12-25', addr:'Nigeria', st:'Nigeria', lga:'', pid:5, gen:3, img:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=300&h=300&fit=crop&crop=face'},
+  {id:17, fn:'Hasan',    mn:'Sani',    sn:'Bello',    g:'Male',   dob:'2011-03-15', addr:'Nigeria', st:'Nigeria', lga:'', pid:5, gen:3, img:'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&crop=face'},
+];
+
+let admins = [
+  {u:'ali@Galadima', p:'Admin@123', role:'main',  q:"What is your mother's maiden name?", a:'GALADIMA'},
+  {u:'kab@Galadima', p:'Admin@123', role:'admin', q:'What city were you born in?',         a:'KANO'},
+  {u:'ism@Galadima', p:'Admin@123', role:'admin', q:"What is your pet's name?",            a:'BATURE'},
+];
+
+const histData = [
+  {yr:'Founding',   title:'The Galadima Lineage',    body:'Alhaji Aliyu Umar Galadima establishes himself as a respected community leader and family patriarch. A man of deep faith, wisdom and generosity, his name becomes synonymous with integrity across the community.'},
+  {yr:'First Sons', title:'Kabir, Ismail & Usman',   body:"Three sons are born — Kabir, Ismail and Usman — each inheriting their father's values of hard work, faith and community responsibility. They grow into pillars of the family."},
+  {yr:'Daughters',  title:'Fatima & Khadija',        body:'Fatima and Khadija are born, completing the five children of the patriarch. Both daughters are raised with strong values and go on to build their own families — Fatima marrying into the Wada family and Khadija into the Bello family.'},
+  {yr:'New Roots',  title:'The Third Generation',    body:'Grandchildren arrive across both branches — sons and daughters carry the Galadima spirit, while children of Fatima and Khadija carry new family names while remaining deeply connected to their roots.'},
+  {yr:'Today',      title:'A Living Legacy',         body:'This digital archive is created to preserve the Galadima family story — recording names, faces and connections so that future generations always know where they come from and who they belong to.'},
+];
+
+let curAdmin = null, navStack = [];
+
+// helpers
+const byId  = id => M.find(m => m.id === id);
+const kids  = pid => M.filter(m => m.pid === pid);
+const full  = m => `${m.fn} ${m.mn} ${m.sn}`;
+const av    = m => `https://ui-avatars.com/api/?name=${encodeURIComponent(m.fn+'+'+m.sn)}&background=e8f5ed&color=1a5c3a&size=200`;
+const fmt   = d => { if(!d) return '—'; try{ return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }catch(e){return d;} };
+
+// ── NAVIGATION ──
+let cur = 'home';
+function go(id) {
+  document.getElementById('page-'+cur)?.classList.remove('active');
+  cur = id;
+  document.getElementById('page-'+id)?.classList.add('active');
+  window.scrollTo(0,0);
+  document.body.classList.toggle('admin-mode', id === 'admin-dashboard');
+  ['home','search','relationship','history'].forEach(p => {
+    const el = document.getElementById('nav-'+p);
+    if(el) el.classList.toggle('active', p === id);
+  });
+  if(id === 'search')           initSearch();
+  if(id === 'relationship')     initRel();
+  if(id === 'history')          initHist();
+  if(id === 'admin-dashboard')  initDash();
+}
+
+function toggleMob() {
+  const m = document.getElementById('mob-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+
+// ── TREE ──
+function enterTree(id) {
+  navStack.push(id);
+  renderTree(byId(id));
+  go('tree');
+}
+function renderTree(m) {
+  if(!m) return;
+  const bImg = document.getElementById('b-img');
+  bImg.src = m.img;
+  bImg.onerror = function(){ this.src = av(m); };
+  document.getElementById('b-name').textContent = full(m);
+  document.getElementById('b-sub').textContent = `${m.g} · Gen ${m.gen}` + (m.dob ? ` · Born ${fmt(m.dob)}` : '');
+
+  document.getElementById('bc').innerHTML = navStack.map((id,i) => {
+    const mb = byId(id), isLast = i === navStack.length-1;
+    return `<span class="crumb${isLast?' last':''}" onclick="bcNav(${i})">${mb.fn} ${mb.sn}</span>${!isLast ? '<span class="crumb-sep">›</span>' : ''}`;
+  }).join('');
+
+  const ch = kids(m.id);
+  const grid = document.getElementById('cgrid');
+  const nk   = document.getElementById('nokids');
+  const trunk= document.getElementById('trunk');
+
+  if(!ch.length){
+    grid.innerHTML=''; nk.style.display='block'; trunk.style.display='none'; return;
+  }
+  nk.style.display='none'; trunk.style.display='block';
+
+  const perRow = Math.min(5, ch.length);
+  const rowHtml = (rowKids) => {
+    const nodes = rowKids.map((c,i) => {
+      const isFemale = c.g==='Female', hasK = kids(c.id).length;
+      return `<div class="child-node">
+        <div class="child-drop"></div>
+        <div class="child-card" onclick="cardClick(${c.id})" style="animation:fadeUp .35s ${i*.07}s both;">
+          <div class="photo-ring">
+            <img class="c-photo${isFemale?' female':''}" src="${c.img}" alt="${c.fn}"
+                 onerror="this.src='${av(c)}'" loading="lazy"/>
+            ${hasK ? `<span class="kids-count">${hasK} children</span>` : ''}
+          </div>
+          <div class="c-name">${c.fn} ${c.sn}</div>
+          <div class="c-sub">${isFemale?'♀':'♂'} ${c.g}</div>
+          <button class="prof-btn" onclick="event.stopPropagation();openProfile(${c.id})">Profile</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="position:relative;margin-bottom:24px;">
+      <div style="height:2px;background:linear-gradient(to right,transparent,var(--gl),transparent);position:absolute;top:20px;left:60px;right:60px;"></div>
+      <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:20px;">${nodes}</div>
+    </div>`;
+  };
+
+  let html='';
+  for(let i=0; i<ch.length; i+=perRow) html+=rowHtml(ch.slice(i,i+perRow));
+  grid.innerHTML=html;
+}
+
+function cardClick(id){ kids(id).length ? enterTree(id) : openProfile(id); }
+function goBack(){ if(navStack.length<=1){goHome();return;} navStack.pop(); renderTree(byId(navStack[navStack.length-1])); }
+function goHome(){ navStack=[]; go('home'); }
+function bcNav(i){ navStack=navStack.slice(0,i+1); renderTree(byId(navStack[navStack.length-1])); }
+
+// ── PROFILE MODAL ──
+function openProfile(id){
+  const m=byId(id); if(!m) return;
+  const par = (m.pid!==null&&m.pid!==undefined) ? byId(m.pid) : null;
+  const ch=kids(m.id), isFemale=m.g==='Female';
+  document.getElementById('mod-cont').innerHTML=`
+    <div style="position:relative;height:140px;overflow:hidden;border-radius:20px 20px 0 0;">
+      <img src="${m.img}" style="width:100%;height:100%;object-fit:cover;object-position:center top;filter:blur(7px) brightness(.55);transform:scale(1.12);" onerror="this.src='${av(m)}'"/>
+    </div>
+    <div style="text-align:center;margin-top:-50px;padding:0 20px 24px;position:relative;z-index:1;">
+      <img src="${m.img}" style="width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:center top;border:4px solid var(--white);box-shadow:0 6px 24px rgba(0,0,0,.18);margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" onerror="this.src='${av(m)}'"/>
+      <h3 style="font-family:var(--fd);font-size:1.1rem;color:var(--g);">${full(m)}</h3>
+      <div style="display:flex;justify-content:center;gap:6px;margin:8px 0 18px;flex-wrap:wrap;">
+        <span class="badge${isFemale?' badge-f':''}">${m.g}</span>
+        <span class="badge">Gen ${m.gen}</span>
+        ${m.st?`<span class="badge">${m.st}</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin-bottom:14px;">
+        <div class="dp"><div class="lbl">Date of Birth</div><div class="val">${fmt(m.dob)}</div></div>
+        <div class="dp"><div class="lbl">Children</div><div class="val">${ch.length}</div></div>
+        ${m.addr?`<div class="dp" style="grid-column:span 2;"><div class="lbl">Address</div><div class="val">${m.addr}</div></div>`:''}
+        ${par?`<div class="dp" style="grid-column:span 2;"><div class="lbl">Parent</div><div class="val" style="color:var(--g);cursor:pointer;" onclick="closeModX();openProfile(${par.id})">${full(par)}</div></div>`:''}
+      </div>
+      ${ch.length?`
+        <div style="text-align:left;margin-bottom:14px;">
+          <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin-bottom:8px;">Children</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">${ch.map(c=>`<span class="chip" onclick="closeModX();openProfile(${c.id})">${c.fn} ${c.sn}</span>`).join('')}</div>
+        </div>
+        <button class="btn" style="width:100%;font-size:.85rem;" onclick="closeModX();enterTree(${m.id})">View Children in Tree &rarr;</button>`:''}
+    </div>`;
+  document.getElementById('mod-bg').classList.add('open');
+}
+function closeMod(e){ if(e.target===document.getElementById('mod-bg')) closeModX(); }
+function closeModX(){ document.getElementById('mod-bg').classList.remove('open'); }
+
+// ── SEARCH ──
+function initSearch(){
+  document.getElementById('s-inp').value='';
+  document.getElementById('s-res').innerHTML='';
+  document.getElementById('s-empty').style.display='block';
+}
+function doSearch(q){
+  q=q.trim().toLowerCase();
+  const res=document.getElementById('s-res'), emp=document.getElementById('s-empty');
+  if(!q){ res.innerHTML=''; emp.style.display='block'; return; }
+  emp.style.display='none';
+  const found=M.filter(m=>m.fn.toLowerCase().includes(q)||m.mn.toLowerCase().includes(q)||m.sn.toLowerCase().includes(q));
+  if(!found.length){ res.innerHTML=`<div style="text-align:center;padding:36px 0;color:var(--mut);font-size:.9rem;">No members match "<strong>${q}</strong>"</div>`; return; }
+  res.innerHTML=found.map(m=>`
+    <div class="s-row" onclick="openProfile(${m.id})">
+      <img src="${m.img}" class="s-photo" alt="${m.fn}" onerror="this.src='${av(m)}'"/>
+      <div style="flex:1;min-width:0;">
+        <p style="font-weight:700;font-size:.875rem;">${full(m)}</p>
+        <p style="font-size:.75rem;color:var(--mut);margin-top:2px;">${m.g} · Generation ${m.gen}${m.st?' · '+m.st:''}</p>
+      </div>
+      <span class="badge">Gen ${m.gen}</span>
+    </div>`).join('');
+}
+
+// ── RELATIONSHIP ──
+function initRel(){
+  ['rel-a','rel-b'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.innerHTML='<option value="">Select a member…</option>';
+    M.forEach(m=>s.insertAdjacentHTML('beforeend',`<option value="${m.id}">${m.fn} ${m.sn} (Gen ${m.gen})</option>`));
+  });
+  document.getElementById('rel-res').classList.remove('show');
+}
+function ancs(id){ const p=[]; let m=byId(id); while(m){p.unshift(m.id); m=(m.pid!==null&&m.pid!==undefined)?byId(m.pid):null;} return p; }
+function genderLabel(m,male,female){ return m.g==='Female'?female:male; }
+
+function findRel(){
+  const idA=parseInt(document.getElementById('rel-a').value);
+  const idB=parseInt(document.getElementById('rel-b').value);
+  const box=document.getElementById('rel-res');
+  box.classList.add('show');
+  if(!idA||!idB){ box.innerHTML='<p style="color:var(--mut);font-size:.9rem;">Please select both members.</p>'; return; }
+  if(idA===idB){ box.innerHTML=`<p style="font-family:var(--fd);font-size:1.3rem;color:var(--g);">Same Person</p>`; return; }
+
+  const mA=byId(idA), mB=byId(idB);
+  const aA=ancs(idA), aB=ancs(idB), aBset=new Set(aB);
+
+  let lcaId=null;
+  for(let i=aA.length-1;i>=0;i--){ if(aBset.has(aA[i])){ lcaId=aA[i]; break; } }
+  if(!lcaId){ box.innerHTML='<p style="color:var(--mut);font-size:.9rem;">No common ancestor found in this family tree.</p>'; return; }
+
+  const lca=byId(lcaId);
+  const dL=ancs(lcaId).length-1;
+  const distA=aA.length-1-dL, distB=aB.length-1-dL;
+
+  let relAtoB='', relBtoA='', explanation='';
+
+  if(distA===0&&distB>0){
+    if(distB===1){ relAtoB=genderLabel(mA,'Father','Mother')+' of '+mB.fn; relBtoA=genderLabel(mB,'Son','Daughter')+' of '+mA.fn; }
+    else if(distB===2){ relAtoB=genderLabel(mA,'Grandfather','Grandmother')+' of '+mB.fn; relBtoA=genderLabel(mB,'Grandson','Granddaughter')+' of '+mA.fn; }
+    else{ relAtoB='Ancestor of '+mB.fn; relBtoA='Descendant of '+mA.fn; }
+  } else if(distB===0&&distA>0){
+    if(distA===1){ relBtoA=genderLabel(mB,'Father','Mother')+' of '+mA.fn; relAtoB=genderLabel(mA,'Son','Daughter')+' of '+mB.fn; }
+    else if(distA===2){ relBtoA=genderLabel(mB,'Grandfather','Grandmother')+' of '+mA.fn; relAtoB=genderLabel(mA,'Grandson','Granddaughter')+' of '+mB.fn; }
+    else{ relBtoA='Ancestor of '+mA.fn; relAtoB='Descendant of '+mB.fn; }
+  } else if(distA===1&&distB===1){
+    relAtoB=genderLabel(mA,'Brother','Sister')+' of '+mB.fn;
+    relBtoA=genderLabel(mB,'Brother','Sister')+' of '+mA.fn;
+    explanation='They share the same parent: '+full(lca);
+  } else if(distA===1&&distB===2){
+    relAtoB=genderLabel(mA,'Uncle','Aunt')+' of '+mB.fn;
+    relBtoA=genderLabel(mB,'Nephew','Niece')+' of '+mA.fn;
+  } else if(distA===2&&distB===1){
+    relBtoA=genderLabel(mB,'Uncle','Aunt')+' of '+mA.fn;
+    relAtoB=genderLabel(mA,'Nephew','Niece')+' of '+mB.fn;
+  } else if(distA===2&&distB===2){
+    relAtoB='First Cousin of '+mB.fn; relBtoA='First Cousin of '+mA.fn;
+    explanation='Their shared grandparent is '+full(lca);
+  } else if(distA===3&&distB===3){
+    relAtoB='Second Cousin of '+mB.fn; relBtoA='Second Cousin of '+mA.fn;
+  } else if((distA===2&&distB===3)||(distA===3&&distB===2)){
+    relAtoB='First Cousin Once Removed of '+mB.fn; relBtoA='First Cousin Once Removed of '+mA.fn;
+  } else {
+    relAtoB='Distant Relative of '+mB.fn+' ('+distA+' + '+distB+' steps from common ancestor)';
+    relBtoA='Distant Relative of '+mA.fn;
+  }
+
+  box.innerHTML=`
+    <div class="rel-avatars">
+      <div class="rel-av"><img src="${mA.img}" onerror="this.src='${av(mA)}'"/><span>${mA.fn}</span></div>
+      <span class="link-icon">🔗</span>
+      <div class="rel-av"><img src="${mB.img}" onerror="this.src='${av(mB)}'"/><span>${mB.fn}</span></div>
+    </div>
+    <div style="background:var(--gp);border-radius:12px;padding:14px 18px;margin-bottom:12px;text-align:left;">
+      <p style="font-size:.68rem;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">${mA.fn}'s relationship to ${mB.fn}</p>
+      <p style="font-family:var(--fd);font-size:1.1rem;font-weight:700;color:var(--g);">${relAtoB}</p>
+    </div>
+    <div style="background:#fce7f3;border-radius:12px;padding:14px 18px;margin-bottom:14px;text-align:left;">
+      <p style="font-size:.68rem;color:#9d174d;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">${mB.fn}'s relationship to ${mA.fn}</p>
+      <p style="font-family:var(--fd);font-size:1.1rem;font-weight:700;color:#9d174d;">${relBtoA}</p>
+    </div>
+    <p style="font-size:.8rem;color:var(--mut);">Common ancestor: <strong style="color:var(--g);">${full(lca)}</strong> (Gen ${lca.gen})${explanation?'<br><span style="margin-top:4px;display:block;">'+explanation+'</span>':''}</p>`;
+}
+
+// ── HISTORY ──
+function initHist(){
+  const tl=document.getElementById('tl');
+  if(!tl.innerHTML.trim()){
+    tl.innerHTML=histData.map((e,i)=>`
+      <div class="tl-item" style="transition-delay:${i*.08}s;">
+        <div class="tl-dot"></div>
+        <div class="tl-body">
+          <div class="tl-year">${e.yr}</div>
+          <div class="tl-title">${e.title}</div>
+          <p>${e.body}</p>
+        </div>
+      </div>`).join('');
+  }
+  const items=tl.querySelectorAll('.tl-item');
+  items.forEach(el=>el.classList.remove('visible'));
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('visible'); obs.unobserve(en.target); } });
+  },{threshold:0.1});
+  items.forEach(el=>obs.observe(el));
+  setTimeout(()=>items.forEach(el=>{ const r=el.getBoundingClientRect(); if(r.top<window.innerHeight) el.classList.add('visible'); }),80);
+}
+
+// ── AUTH ──
+function doLogin(){
+  const u=document.getElementById('l-u').value.trim(), p=document.getElementById('l-p').value;
+  const err=document.getElementById('l-err');
+  const a=admins.find(x=>x.u===u&&x.p===p);
+  if(!a){ err.textContent='Incorrect username or password.'; err.style.display='block'; return; }
+  err.style.display='none'; curAdmin=a; go('admin-dashboard');
+}
+function doLogout(){ curAdmin=null; document.body.classList.remove('admin-mode'); go('home'); }
+
+// BUG FIX: reset password functions renamed rs1fn/rs2fn/rs3fn (rs1/rs2/rs3 collided with element IDs)
+function rs1fn(){
+  const u=document.getElementById('rs-u').value.trim();
+  const a=admins.find(x=>x.u===u); if(!a){ alert('Username not found.'); return; }
+  document.getElementById('rs-q').textContent=a.q;
+  document.getElementById('rs1').style.display='none';
+  const s2=document.getElementById('rs2'); s2.style.display='block'; s2.dataset.u=u;
+}
+function rs2fn(){
+  const u=document.getElementById('rs2').dataset.u;
+  const a=admins.find(x=>x.u===u);
+  const ans=document.getElementById('rs-a').value.trim().toUpperCase();
+  const err=document.getElementById('rs-err');
+  if(ans!==a.a){ err.textContent='Incorrect answer.'; err.style.display='block'; return; }
+  err.style.display='none';
+  document.getElementById('rs2').style.display='none';
+  const s3=document.getElementById('rs3'); s3.style.display='block'; s3.dataset.u=u;
+}
+function rs3fn(){
+  const u=document.getElementById('rs3').dataset.u;
+  const np=document.getElementById('rs-np').value;
+  if(np.length<6){ alert('Password must be at least 6 characters.'); return; }
+  admins.find(x=>x.u===u).p=np;
+  alert('Password reset successfully!');
+  document.getElementById('rs1').style.display='block';
+  document.getElementById('rs2').style.display='none';
+  document.getElementById('rs3').style.display='none';
+  ['rs-u','rs-a','rs-np'].forEach(id=>document.getElementById(id).value='');
+  go('admin-login');
+}
+
+// ── ADMIN DASHBOARD ──
+function initDash(){
+  if(!curAdmin){ go('admin-login'); return; }
+  document.getElementById('sb-u').textContent=curAdmin.u;
+  document.getElementById('sb-r').textContent=curAdmin.role==='main'?'Main Administrator':'Administrator';
+  if(curAdmin.role!=='main') document.getElementById('sb-adm').style.opacity='.35';
+  document.getElementById('d-total').textContent=M.length;
+  renderMT(); fillParent();
+}
+function toggleSB(o){ document.getElementById('sb').classList.toggle('open',o); document.getElementById('sb-ov').classList.toggle('open',o); }
+
+function showSec(s,el){
+  ['dashboard','members','admins'].forEach(x=>{
+    const e=document.getElementById('sec-'+x); if(e) e.style.display='none';
+  });
+  const sec=document.getElementById('sec-'+s); if(sec) sec.style.display='block';
+  document.getElementById('sec-ttl').textContent=s.charAt(0).toUpperCase()+s.slice(1);
+  // BUG FIX: now correctly targets .sb-link elements
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('on')); el.classList.add('on');
+  toggleSB(false);
+  if(s==='members') renderMT();
+}
+
+let mtExpanded = false;
+const MT_LIMIT = 4;
+
+function renderMT(){
+  const tb=document.getElementById('mtbody'); if(!tb) return;
+  const headExists=M.some(m=>m.pid===null||m.pid===undefined);
+  const btnHead=document.getElementById('btn-add-head');
+  if(btnHead) btnHead.style.display=headExists?'none':'';
+
+  // filter by search
+  const q=(document.getElementById('mt-search')?.value||'').trim().toLowerCase();
+  const filtered = q
+    ? M.filter(m=>m.fn.toLowerCase().includes(q)||m.mn.toLowerCase().includes(q)||m.sn.toLowerCase().includes(q))
+    : M;
+
+  const toShow = (mtExpanded || q) ? filtered : filtered.slice(0, MT_LIMIT);
+
+  tb.innerHTML=toShow.map(m=>{
+    const par=(m.pid!==null&&m.pid!==undefined)?byId(m.pid):null;
+    const isHead=(m.pid===null||m.pid===undefined);
+    const indent=m.gen>1?`padding-left:${(m.gen-1)*14}px`:'';
+    const actBtns=isHead
+      ?`<button onclick="editM(${m.id})" title="Edit" style="background:var(--gp);border:none;border-radius:7px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" fill="none" stroke="var(--g)" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </button>`
+      :`<button onclick="addChildFor(${m.id})" title="Add child" style="background:#d1fae5;border:none;border-radius:7px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:3px;">
+          <svg width="13" height="13" fill="none" stroke="#065f46" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <button onclick="editM(${m.id})" title="Edit" style="background:var(--gp);border:none;border-radius:7px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:3px;">
+          <svg width="13" height="13" fill="none" stroke="var(--g)" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </button>
+        <button onclick="delM(${m.id})" title="Delete" style="background:#fee2e2;border:none;border-radius:7px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" fill="none" stroke="#b91c1c" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>`;
+    return `<tr>
+      <td><img src="${m.img}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--gp);" onerror="this.src='${av(m)}'"/></td>
+      <td style="font-weight:700;${indent}">${isHead?'👑 ':m.gen===2?'└ ':'&nbsp;&nbsp;&nbsp;└ '}${full(m)}</td>
+      <td><span class="badge">Gen ${m.gen}</span>${isHead?' <span class="badge-gold badge" style="font-size:.6rem;">Head</span>':''}</td>
+      <td style="color:var(--mut);font-size:.8rem;">${par?par.fn+' '+par.sn:'—'}</td>
+      <td style="white-space:nowrap;text-align:center;">${actBtns}</td></tr>`;
+  }).join('');
+
+  // footer: count + view more/less
+  const footer=document.getElementById('mt-footer'); if(!footer) return;
+  if(q){
+    footer.innerHTML=`<span style="font-size:.8rem;color:var(--mut);">${filtered.length} result${filtered.length!==1?'s':''} for "<strong>${q}</strong>"</span>`;
+  } else if(filtered.length <= MT_LIMIT){
+    footer.innerHTML=`<span style="font-size:.8rem;color:var(--mut);">${filtered.length} member${filtered.length!==1?'s':''}</span>`;
+  } else {
+    footer.innerHTML=`<span style="font-size:.8rem;color:var(--mut);">Showing ${toShow.length} of ${filtered.length} members</span>
+      <button class="btn-o btn-sm" onclick="mtExpanded=!mtExpanded;renderMT();" style="margin-left:auto;">
+        ${mtExpanded?'View Less ▲':'View More ▼'}
+      </button>`;
+  }
+}
+
+function fillParent(){
+  const s=document.getElementById('fm-p'); if(!s) return;
+  s.innerHTML='<option value="">None (Head / Ancestor)</option>';
+  M.forEach(m=>s.insertAdjacentHTML('beforeend',`<option value="${m.id}">${m.fn} ${m.sn} (Gen ${m.gen})</option>`));
+}
+
+function openAddHead(){
+  const headExists=M.some(m=>m.pid===null||m.pid===undefined);
+  if(headExists){ alert('A family head already exists. You can only edit the head.'); return; }
+  editId=null; lockedParentId=null;
+  document.getElementById('add-ttl').textContent='Add Family Head';
+  document.getElementById('add-parent-info').style.display='none';
+  document.getElementById('fm-p-wrap').style.display='none';
+  ['fm-fn','fm-mn','fm-sn','fm-st','fm-lg','fm-ad','fm-im'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fm-d').value=''; document.getElementById('fm-g').value='Male';
+  document.getElementById('add-mod').classList.add('open');
+}
+
+let editId=null, lockedParentId=null;
+
+function addChildFor(parentId){
+  const par=byId(parentId); if(!par) return;
+  editId=null; lockedParentId=parentId;
+  document.getElementById('add-ttl').textContent='Add Child';
+  document.getElementById('add-parent-info').style.display='block';
+  document.getElementById('add-parent-name').textContent=full(par)+' (Gen '+par.gen+')';
+  document.getElementById('fm-p-wrap').style.display='none';
+  ['fm-fn','fm-mn','fm-sn','fm-st','fm-lg','fm-ad','fm-im'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fm-d').value=''; document.getElementById('fm-g').value='Male';
+  document.getElementById('add-mod').classList.add('open');
+}
+
+function editM(id){
+  const m=byId(id); editId=id; lockedParentId=null;
+  document.getElementById('add-ttl').textContent='Edit — '+m.fn+' '+m.sn;
+  document.getElementById('add-parent-info').style.display='none';
+  document.getElementById('fm-p-wrap').style.display='block';
+  document.getElementById('fm-fn').value=m.fn; document.getElementById('fm-mn').value=m.mn;
+  document.getElementById('fm-sn').value=m.sn; document.getElementById('fm-g').value=m.g;
+  document.getElementById('fm-d').value=m.dob; document.getElementById('fm-st').value=m.st;
+  document.getElementById('fm-lg').value=m.lga; document.getElementById('fm-ad').value=m.addr;
+  document.getElementById('fm-im').value=m.img; fillParent();
+  document.getElementById('fm-p').value=(m.pid!==null&&m.pid!==undefined)?m.pid:'';
+  document.getElementById('add-mod').classList.add('open');
+}
+
+function closeAdd(){ document.getElementById('add-mod').classList.remove('open'); lockedParentId=null; }
+function closeAddOut(e){ if(e.target===document.getElementById('add-mod')) closeAdd(); }
+
+function saveMember(){
+  const fn=document.getElementById('fm-fn').value.trim(), sn=document.getElementById('fm-sn').value.trim();
+  if(!fn||!sn){ alert('First name and surname are required.'); return; }
+
+  let pid, gen;
+  if(editId!==null){
+    pid=document.getElementById('fm-p').value!==''?parseInt(document.getElementById('fm-p').value):null;
+    const par=pid!==null?byId(pid):null;
+    gen=par?par.gen+1:1;
+  } else if(lockedParentId!==null){
+    pid=lockedParentId;
+    const par=byId(pid);
+    gen=par?par.gen+1:2;
+  } else {
+    pid=null; gen=1;
+  }
+
+  const data={fn, mn:document.getElementById('fm-mn').value.trim(), sn, g:document.getElementById('fm-g').value,
+    dob:document.getElementById('fm-d').value, st:document.getElementById('fm-st').value.trim(),
+    lga:document.getElementById('fm-lg').value.trim(), addr:document.getElementById('fm-ad').value.trim(),
+    img:document.getElementById('fm-im').value.trim()||av({fn,sn}), pid, gen};
+
+  if(editId!==null){ const i=M.findIndex(m=>m.id===editId); M[i]={...M[i],...data}; }
+  else M.push({id:Date.now(),...data});
+
+  closeAdd(); renderMT(); document.getElementById('d-total').textContent=M.length;
+}
+
+function delM(id){
+  const m=byId(id);
+  const childCount=kids(id).length;
+  const msg=childCount>0
+    ?`Delete "${full(m)}"? This member has ${childCount} child(ren). Only this member will be removed.`
+    :`Delete "${full(m)}"?`;
+  if(!confirm(msg)) return;
+  M=M.filter(m=>m.id!==id);
+  renderMT(); document.getElementById('d-total').textContent=M.length;
+}
+
+function createAdmin(){
+  const name=prompt('Enter new admin full name:'); if(!name) return;
+  const u=name.trim().substring(0,3).toLowerCase()+'@Galadima';
+  admins.push({u, p:'Admin@123', role:'admin', q:'What is your city?', a:'CITY'});
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="font-weight:700;">${u}</td><td><span style="font-size:.78rem;font-weight:600;color:var(--mut);">Admin</span></td><td style="color:var(--mut);">Today</td><td><button style="color:var(--red);font-size:.78rem;font-weight:700;border:none;background:none;cursor:pointer;" onclick="this.closest('tr').remove()">Delete</button></td>`;
+  document.getElementById('atbody').appendChild(tr);
+  alert(`Created!\nUsername: ${u}\nDefault Password: Admin@123`);
+}
+
+document.addEventListener('DOMContentLoaded', () => go('home'));
+</script>
+</body>
+</html>
